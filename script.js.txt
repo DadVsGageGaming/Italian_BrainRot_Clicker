@@ -1,0 +1,51 @@
+﻿let brainJuice = 0;
+let juicePerClick = 1;
+
+
+const upgrades = [
+  { name: "Strong Espresso", cost: 10, bonus: 1 },
+  { name: "Creamy Milk", cost: 100, bonus: 2 },
+  { name: "Sugar Rush", cost: 1000, bonus: 5 },
+  { name: "Tung Tung Tung Sahur", cost: 1000000, bonus: 25 },
+  { name: "Tralalero Tralala", cost: 1000000000, bonus: 100 },
+  { name: "Ballerina Cappuccina", cost: 1000000000000, bonus: 500 }
+];
+
+
+function updateDisplay() {
+  document.getElementById("brainJuice").textContent = brainJuice;
+}
+
+
+function clickBrain() {
+  brainJuice += juicePerClick;
+  updateDisplay();
+}
+
+
+function buyUpgrade(index) {
+  const upgrade = upgrades[index];
+  if (brainJuice >= upgrade.cost) {
+    brainJuice -= upgrade.cost;
+    juicePerClick += upgrade.bonus;
+    updateDisplay();
+    alert(`Bought ${upgrade.name}! Click Power is now ${juicePerClick}.`);
+  } else {
+    alert("Not enough Brain Juice!");
+  }
+}
+
+
+function createUpgrades() {
+  const container = document.getElementById("upgrades");
+  upgrades.forEach((upg, index) => {
+    const btn = document.createElement("button");
+    btn.textContent = `${upg.name} (+${upg.bonus} juice/click) - Cost: ${upg.cost}`;
+    btn.onclick = () => buyUpgrade(index);
+    container.appendChild(btn);
+  });
+}
+
+
+createUpgrades();
+updateDisplay();

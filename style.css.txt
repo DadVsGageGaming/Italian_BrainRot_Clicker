@@ -1,35 +1,30 @@
-﻿body {
-  font-family: sans-serif;
+body {
   text-align: center;
-  background-color: #111;
-  color: #ff5544;
-  padding: 30px;
+  font-family: sans-serif;
+  background-color: #f0f8ff;
+  margin: 0;
+  padding: 0;
 }
 
+#login-screen, #game-screen {
+  margin-top: 40px;
+}
+
+canvas {
+  border: 3px solid #000;
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+input {
+  padding: 10px;
+  font-size: 16px;
+  width: 250px;
+}
 
 button {
-  font-size: 20px;
   padding: 10px 20px;
-  margin: 20px;
-  background-color: #ff5544;
-  color: white;
-  border: none;
-  border-radius: 10px;
+  font-size: 16px;
+  margin-left: 10px;
   cursor: pointer;
-}
-
-
-button:hover {
-  background-color: #ff3322;
-}
-
-
-.upgrade-container {
-  background-color: #222;
-  padding: 20px;
-  border-radius: 10px;
-  margin-top: 30px;
-  width: 300px;
-  margin-left: auto;
-  margin-right: auto;
 }

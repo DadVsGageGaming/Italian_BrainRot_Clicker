@@ -1,1 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Stacky Blocks</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="login-screen">
+    <h1>Stacky Blocks</h1>
+    <input type="email" id="email" placeholder="Enter email 📩" required />
+    <button onclick="startGame()">Login / Sign Up</button>
+  </div>
 
+  <div id="game-screen" style="display: none;">
+    <h1>Stacky Blocks</h1>
+    <canvas id="gameCanvas" width="300" height="600"></canvas>
+    <p>⬅️ ➡️ ⬆️ ⬇️ to control blocks</p>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
+
+body {
+  text-align: center;
+  font-family: sans-serif;
+  background-color: #f0f8ff;
+  margin: 0;
+  padding: 0;
+}
+
+#login-screen, #game-screen {
+  margin-top: 40px;
+}
+
+canvas {
+  border: 3px solid #000;
+  background-color: #fff;
+  margin-top: 20px;
+}
+
+input {
+  padding: 10px;
+  font-size: 16px;
+  width: 250px;
+}
+
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  margin-left: 10px;
+  cursor: pointer;
+}
+
+// Login screen
+function startGame() {
+  const email = document.getElementById("email").value;
+  if (email.includes("@") && email.includes(".")) {
+    document.getElementById("login-screen").style.display = "none";
+    document.getElementById("game-screen").style.display = "block";
+    initGame();
+  } else {
+    alert("Please enter a valid email 📩");
+  }
+}
+
+// Game setup
+const canvas = document.getElementById("gameCanvas");
+const ctx = canvas.getContext("2d");
+const cols = 10;
+const rows = 20;
+const blockSize = 30;
+
+const colors = ["#48a", "#a84", "#2c8", "#d33", "#f80", "#88f", "#0aa"];
+
+const shapes = [
+  [[1, 1, 1, 1]], // I
+  [[1, 1], [1, 1]], // O
+  [[0, 1, 0], [1, 1, 1]], // T
+  [[1, 0, 0], [1, 1, 1]], // J
+  [[0, 0, 1], [1, 1, 1]], // L
+  [[0, 1, 1], [1, 1, 0]], // S
+  [[1, 1, 0], [0, 1, 1]], // Z
+];
+
+let board = [];
+let current;
+let currentX, currentY;
+let gameInterval;
+
+function initGame() {
+  board = Array.from({ length: rows }, () => Array(cols).fill(0));
+  document.addEventListener("keydown", handleKey);
+  newPiece();
+  gameInterval = setInterval(drop, 500);
+  draw();
+}
+
+function drawBlock(x, y, colorIndex) {
+  ctx.fillStyle = colors[colorIndex];
+  ctx.fillRect(x * blockSize, y * blockSize, blockSize, blockSize);
+  ctx.strokeStyle = "#fff";
+  ctx.strokeRect(x * blockSize, y * blockSize, blockSize, blockSize);
+}
+
+function draw() {
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+  for (let y = 0; y < rows; y++) {
+    for (let x = 0; x < cols; x++) {
+      if (board[y][x]) {
+        drawBlock(x, y, board[y][x] - 1);
+      }
+    }
+  }
+
+  for (let y = 0; y < current.shape.length; y++) {
+    for (let x = 0; x < current.shape[y].length; x++) {
+      if (current.shape[y][x]) {
+        drawBlock(currentX + x, currentY + y, current.color);
+      }
+    }
+  }
+}
+
+function newPiece() {
+  const index = Math.floor(Math.random() * shapes.length);
+  current = {
+    shape: shapes[index],
+    color: index
+  };
+  currentX = 3;
+  currentY = 0;
+
+  if (!isValidMove(current.shape, currentX, currentY)) {
+    alert("Game Over!");
+    clearInterval(gameInterval);
+  }
+}
+
+function rotate(shape) {
+  return shape[0].map((_, i) => shape.map(row => row[i]).reverse());
+}
+
+function handleKey(e) {
+  if (e.key === "ArrowLeft" && isValidMove(current.shape, currentX - 1, currentY)) {
+    currentX--;
+  } else if (e.key === "ArrowRight" && isValidMove(current.shape, currentX + 1, currentY)) {
+    currentX++;
+  } else if (e.key === "ArrowDown" && isValidMove(current.shape, currentX, currentY + 1)) {
+    currentY++;
+  } else if (e.key === "ArrowUp") {
+    const rotated = rotate(current.shape);
+    if (isValidMove(rotated, currentX, currentY)) {
+      current.shape = rotated;
+    }
+  }
+  draw();
+}
+
+function drop() {
+  if (isValidMove(current.shape, currentX, currentY + 1)) {
+    currentY++;
+  } else {
+    placePiece();
+    clearLines();
+    newPiece();
+  }
+  draw();
+}
+
+function isValidMove(shape, x, y) {
+  for (let row = 0; row < shape.length; row++) {
+    for (let col = 0; col < shape[row].length; col++) {
+      if (shape[row][col]) {
+        const newX = x + col;
+        const newY = y + row;
+        if (
+          newX < 0 ||
+          newX >= cols ||
+          newY >= rows ||
+          board[newY][newX]
+        ) {
+          return false;
+        }
+      }
+    }
+  }
+  return true;
+}
+
+function placePiece() {
+  for (let y = 0; y < current.shape.length; y++) {
+    for (let x = 0; x < current.shape[y].length; x++) {
+      if (current.shape[y][x]) {
+        board[currentY + y][currentX + x] = current.color + 1;
+      }
+    }
+  }
+}
+
+function clearLines() {
+  for (let y = rows - 1; y >= 0; y--) {
+    if (board[y].every(cell => cell !== 0)) {
+      board.splice(y, 1);
+      board.unshift(Array(cols).fill(0));
+      y++;
+    }
+  }
+}
